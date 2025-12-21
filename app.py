@@ -1,32 +1,7 @@
 import streamlit as st
-
-import os
-
-# ---- FORCE HEADLESS OPENCV (Streamlit Cloud fix) ----
-os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
-os.environ["OPENCV_VIDEOIO_PRIORITY_GSTREAMER"] = "0"
-
-try:
-    import cv2
-    if "opencv-python" in cv2.__file__:
-        raise ImportError("Forcing headless OpenCV")
-except Exception:
-    import importlib
-    import sys
-    sys.modules.pop("cv2", None)
-    import cv2
-# ----------------------------------------------------
-
-
-
 from ultralytics import YOLO
 from PIL import Image
 import numpy as np
-from pathlib import Path
-import random
-import zipfile
-import io
-import cv2
 
 # =====================================================
 # Page Config
