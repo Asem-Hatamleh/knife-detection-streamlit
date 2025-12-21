@@ -1,13 +1,7 @@
 streamlit
-
-# Core ML
 torch
 torchvision
-numpy
+ultralytics
+opencv-python-headless
 pillow
-
-# OpenCV (HEADLESS ONLY)
-opencv-python-headless==4.12.0.88
-
-# Ultralytics WITHOUT dependencies
-ultralytics --no-deps
+numpy
