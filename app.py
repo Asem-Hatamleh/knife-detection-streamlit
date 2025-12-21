@@ -17,10 +17,7 @@ st.set_page_config(
 )
 
 st.title("🔪 Knife Detection System")
-st.markdown(
-    "YOLOv8 vs YOLOv11 — pixel-exact knife detection "
-    "(no resizing, no color modification)"
-)
+st.markdown("YOLOv8 vs YOLOv11")
 
 # =====================================================
 # Paths
@@ -36,7 +33,7 @@ MODEL_11_PATH = "best_11s.pt"
 def load_models():
     return {
         "YOLOv8-S": YOLO(MODEL_8_PATH),
-        "YOLOv11-S": YOLO(MODEL_11_PATH),
+        "YOLOv11-S": YOLO(MODEL_11_PATH)
     }
 
 models = load_models()
@@ -47,31 +44,26 @@ models = load_models()
 st.sidebar.header("Configuration")
 
 conf_threshold = st.sidebar.slider(
-    "Confidence Threshold",
-    0.1, 1.0, 0.30, 0.05
+    "Confidence Threshold", 0.1, 1.0, 0.30, 0.05
 )
 
 iou_threshold = st.sidebar.slider(
-    "NMS IoU Threshold",
-    0.1, 0.9, 0.40, 0.05
+    "NMS IoU Threshold", 0.1, 0.9, 0.40, 0.05
 )
 
 max_det = st.sidebar.selectbox(
-    "Max Detections Per Image",
-    [1, 2, 3],
-    index=0
+    "Max Detections Per Image", [1, 2, 3], index=0
 )
 
 image_source = st.sidebar.radio(
-    "Image Source",
-    ["Sample Images", "Upload Images"]
+    "Image Source", ["Sample Images", "Upload Images"]
 )
 
 compare_mode = st.sidebar.checkbox(
-    "A/B Compare YOLOv8 vs YOLOv11",
-    value=True
+    "A/B Compare YOLOv8 vs YOLOv11", value=True
 )
 
+# 👉 Model selector ONLY when comparison is OFF
 selected_model_name = None
 if not compare_mode:
     selected_model_name = st.sidebar.radio(
@@ -80,11 +72,11 @@ if not compare_mode:
     )
 
 # =====================================================
-# Helpers (UI-ONLY thumbnails)
+# Helpers (UI thumbnails only)
 # =====================================================
 def make_thumbnail(pil_img, max_size=220):
     thumb = pil_img.copy()
-    thumb.thumbnail((max_size, max_size))  # UI only
+    thumb.thumbnail((max_size, max_size))  # UI ONLY
     return thumb
 
 # =====================================================
@@ -100,11 +92,11 @@ if PRE_IMAGES_DIR.exists():
 selected_images = []
 
 # =====================================================
-# Sample Image Gallery (Uniform Thumbnails — UI ONLY)
+# Sample Image Gallery
 # =====================================================
 if image_source == "Sample Images":
 
-    st.subheader("Sample Image Gallery (Uniform Thumbnails)")
+    st.subheader("Sample Image Gallery")
 
     if not sample_images:
         st.warning("No images found in pre_images/")
@@ -117,16 +109,9 @@ if image_source == "Sample Images":
                 img = Image.open(img_path)
                 thumb = make_thumbnail(img)
 
-                st.image(
-                    thumb,
-                    caption=img_path.name,
-                    use_container_width=False
-                )
+                st.image(thumb, caption=img_path.name, use_container_width=False)
 
-                if st.checkbox(
-                    "Select",
-                    key=f"select_{img_path.name}"
-                ):
+                if st.checkbox("Select", key=f"select_{img_path.name}"):
                     selected.append(img_path)
 
         col1, col2 = st.columns(2)
@@ -140,7 +125,7 @@ if image_source == "Sample Images":
         selected_images = selected
 
 # =====================================================
-# Upload Images (NO resizing, NO color change)
+# Upload Images
 # =====================================================
 else:
     uploaded_files = st.file_uploader(
@@ -162,7 +147,7 @@ if selected_images:
 
     for img_item in selected_images:
 
-        # Load original image (unchanged)
+        # Load original image
         if isinstance(img_item, Path):
             image = Image.open(img_item)
             img_name = img_item.name
@@ -185,7 +170,7 @@ if selected_images:
         )
 
         # -------------------------------------------------
-        # A/B Comparison Mode
+        # A/B MODE
         # -------------------------------------------------
         if compare_mode:
             cols = st.columns(3)
@@ -203,18 +188,17 @@ if selected_images:
                     agnostic_nms=True,
                     verbose=False
                 )
-
-                annotated = results[0].plot()  # already RGB
+                img_out = results[0].plot()
 
                 with cols[idx]:
                     st.markdown(f"**{name}**")
-                    st.image(annotated, use_container_width=False)
+                    st.image(img_out, use_container_width=False)
 
-                _, buf = cv2.imencode(".jpg", annotated)
+                _, buf = cv2.imencode(".jpg", img_out)
                 zip_file.writestr(f"{name}_{img_name}", buf.tobytes())
 
         # -------------------------------------------------
-        # Single Model Mode
+        # SINGLE MODEL MODE
         # -------------------------------------------------
         else:
             model = models[selected_model_name]
@@ -232,14 +216,13 @@ if selected_images:
                 agnostic_nms=True,
                 verbose=False
             )
-
-            annotated = results[0].plot()  # already RGB
+            img_out = results[0].plot()
 
             with cols[1]:
                 st.markdown(f"**{selected_model_name}**")
-                st.image(annotated, use_container_width=False)
+                st.image(img_out, use_container_width=False)
 
-            _, buf = cv2.imencode(".jpg", annotated)
+            _, buf = cv2.imencode(".jpg", img_out)
             zip_file.writestr(f"{selected_model_name}_{img_name}", buf.tobytes())
 
         st.divider()
