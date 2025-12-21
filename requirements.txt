@@ -1,11 +1,7 @@
 streamlit
 torch
 torchvision
-numpy
+ultralytics
+opencv-python-headless
 pillow
-
-# CRITICAL: use a cloud-safe Ultralytics version
-ultralytics==8.2.48
-
-# Headless OpenCV only
-opencv-python-headless==4.8.1.78
+numpy
